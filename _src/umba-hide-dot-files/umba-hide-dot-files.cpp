@@ -208,5 +208,41 @@ int unsafeMain(int argc, char* argv[])
     }
 
 
+    if (appConfig.cmd==hide || appConfig.cmd==unhide)
+    {
+        bool bHide = appConfig.cmd==hide;
+        //
+    }
+    else if (appConfig.cmd==shellHide || appConfig.cmd==shellUnhide)
+    {
+        #if defined(WIN32) || defined(_WIN32)
+        bool bHide = appConfig.cmd==shellHide;
+        // https://superuser.com/questions/1151844/how-to-toggle-show-hide-hidden-files-in-windows-through-command-line
+        // HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        // Show: reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v Hidden /t REG_DWORD /d 1 /f
+        // Don't show: reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v Hidden /t REG_DWORD /d 2 /f
+
+        // https://stackoverflow.com/questions/2514523/api-to-toggle-show-hidden-files-folders-and-drives
+        // SendNotifyMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0);
+        // or 
+        // RefreshPolicyEx(False, RP_FORCE);
+        // or 
+        // SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, integer(pchar('Policy')), SMTO_NORMAL or SMTO_ABORTIFHUNG, 5000, c1);
+
+        // SHGetSetSettings
+        // https://learn.microsoft.com/ru-ru/windows/win32/api/shlobj_core/nf-shlobj_core-shgetsetsettings
+        // https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetsetsettings
+        #endif
+    }
+    else if (appConfig.cmd==open)
+    {
+    
+    }
+    else if (appConfig.cmd==makeAlias)
+    {
+    
+    }
+
     return 0;
 }
+
