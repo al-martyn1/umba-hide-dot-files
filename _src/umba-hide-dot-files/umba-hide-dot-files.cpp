@@ -14,6 +14,7 @@
 #include "umba/cli_tool_helpers.h"
 #include "umba/cmd_line.h"
 #include "umba/filesys.h"
+#include "umba/filesys_scanners.h"
 //
 
 //#-sort
@@ -197,6 +198,9 @@ int unsafeMain(int argc, char* argv[])
         umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
 
+
+    // На самом деле делаем выполнение не одной команды, а пакетный режим.
+
     if (appConfig.cmd==Command::none)
     {
         LOG_ERR<<"Command not taken"<<"\n";
@@ -211,6 +215,31 @@ int unsafeMain(int argc, char* argv[])
     if (appConfig.cmd==hide || appConfig.cmd==unhide)
     {
         bool bHide = appConfig.cmd==hide;
+
+        #if defined(WIN32) || defined(_WIN32)
+
+
+        #endif
+
+// umba::filesys::scanners::
+// template<typename StringType, typename LogMsgType> inline
+// void scanFolders( const std::vector<StringType> &rootScanPaths
+//                 , const std::vector<StringType> &includeFilesMaskList
+//                 , const std::vector<StringType> &excludeFilesMaskList
+//                 , LogMsgType                    &logMsg           // logMsg or logNul
+//                 , std::vector<StringType>       &foundFiles
+//                 , std::vector<StringType>       &excludedFiles
+//                 , std::set<StringType>          &foundExtentions
+//                 , std::vector<StringType>       *pFoundFilesRootFolders = 0
+//                 , const std::vector<StringType> &excludeFoldersExact = std::vector<StringType>()
+//                 , bool                          scanRecurse    = true
+//                 , bool                          logFoundHeader = true
+//                 )
+
+// umba::shellapi::win32::
+// bool fileAttributeHiddenSet(const std::string &fname, bool bSet)
+// shellParamShowHiddenFilesSet(bool bShow)
+
         //
     }
     else if (appConfig.cmd==shellHide || appConfig.cmd==shellUnhide)
