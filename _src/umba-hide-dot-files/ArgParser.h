@@ -240,6 +240,130 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
+        else if ( opt.setParam("?MODE",true)
+               || opt.isOption("hide") || opt.isOption('h')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Hide dot (.*) files/folders"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(boolVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = boolVal ? Command::hide : Command::unhide;
+
+            return 0;
+        }
+
+        else if ( opt.isOption("unhide") || opt.isOption('u')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Unhide dot (.*) files/folders"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = Command::unhide;
+
+            return 0;
+        }
+
+        else if ( opt.isOption("open") || opt.isOption('o')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Open folder in explorer"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = Command::unhide;
+
+            return 0;
+        }
+
+        else if ( opt.setParam("?MODE",true)
+               || opt.isOption("shell-hide") || opt.isOption('H')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Turn on/off 'Show hidden files' shell option"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(boolVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = boolVal ? Command::shellHide : Command::shellUnhide;
+
+            return 0;
+        }
+
+        else if ( opt.isOption("shell-unhide") || opt.isOption('u')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Turn on 'Show hidden files' shell option"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = Command::shellUnhide;
+
+            return 0;
+        }
+
+        else if ( opt.setParam("?NAME", "")
+               || opt.isOption("make-self-alias") || opt.isOption("make-alias") || opt.isOption('A') 
+               || opt.setDescription("Create alias for this command. Parameter value is optional, in this case name 'uhdf' will be used."))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (appConfig.cmd!=Command::none)
+            {
+                LOG_ERR<<"Multiple commands taken"<<"\n";
+                return -1;
+            }
+
+            appConfig.cmd = Command::makeAlias;
+ 
+            if (opt.hasArg())
+               appConfig.aliasName = opt.optArg;
+            else
+               appConfig.aliasName = "uhdf";
+
+            return 0;
+        }
+
+
+
+
         #if 0
         else if ( opt.setParam("?MODE",true)
                || opt.isOption("verbose")
@@ -466,6 +590,14 @@ int operator()( const StringType                                &a           //!
     }
 
     // Process non-option args here
+
+    if (!appConfig.path.empty())
+    {
+        LOG_ERR<<"Path already taken"<<"\n";
+        return -1;
+    }
+
+    appConfig.path = argsParser.makeAbsPath(a);;
 
     #if 0
     if (inputFilename.empty())

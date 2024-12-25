@@ -1,0 +1,8 @@
+invalid,unknown    = -1
+none               = 0
+hide
+unhide
+open
+shellHide
+shellUnhide
+makeAlias

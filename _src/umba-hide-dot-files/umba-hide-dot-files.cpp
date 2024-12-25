@@ -13,6 +13,7 @@
 #include "umba/program_location.h"
 #include "umba/cli_tool_helpers.h"
 #include "umba/cmd_line.h"
+#include "umba/filesys.h"
 //
 
 //#-sort
@@ -196,6 +197,15 @@ int unsafeMain(int argc, char* argv[])
         umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
 
+    if (appConfig.cmd==Command::none)
+    {
+        LOG_ERR<<"Command not taken"<<"\n";
+    }
+
+    if (appConfig.path.empty())
+    {
+        appConfig.path = umba::filesys::getCurrentDirectory();
+    }
 
 
     return 0;

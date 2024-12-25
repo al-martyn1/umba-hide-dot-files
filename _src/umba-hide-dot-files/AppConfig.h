@@ -4,6 +4,8 @@
 #include "umba/umba.h"
 //
 #include "umba/string_plus.h"
+//
+#include "enums.h"
 
 //
 #include <map>
@@ -13,6 +15,9 @@
 
 struct AppConfig
 {
+    Command       cmd = Command::none;
+    std::string   aliasName;
+    std::string   path;
 
 }; // struct AppConfig
 
