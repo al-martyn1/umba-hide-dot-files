@@ -243,7 +243,7 @@ int operator()( const StringType                                &a           //!
         else if ( opt.setParam("?MODE",true)
                || opt.isOption("hide") || opt.isOption('h')
                // || opt.setParam("VAL",true)
-               || opt.setDescription("Hide dot (.*) files/folders"))
+               || opt.setDescription("Command. Hide dot (.*) files/folders"))
         {
             if (argsParser.hasHelpOption) return 0;
 
@@ -253,47 +253,41 @@ int operator()( const StringType                                &a           //!
                 return -1;
             }
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(boolVal ? Command::hide : Command::unhide))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--hide)"<<"\n";
                 return -1;
             }
-
-            appConfig.cmd = boolVal ? Command::hide : Command::unhide;
 
             return 0;
         }
 
         else if ( opt.isOption("unhide") || opt.isOption('u')
                // || opt.setParam("VAL",true)
-               || opt.setDescription("Unhide dot (.*) files/folders"))
+               || opt.setDescription("Command. Unhide dot (.*) files/folders"))
         {
             if (argsParser.hasHelpOption) return 0;
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(Command::unhide))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--unhide)"<<"\n";
                 return -1;
             }
-
-            appConfig.cmd = Command::unhide;
 
             return 0;
         }
 
         else if ( opt.isOption("open") || opt.isOption('o')
                // || opt.setParam("VAL",true)
-               || opt.setDescription("Open folder in explorer"))
+               || opt.setDescription("Command. Open folder in explorer"))
         {
             if (argsParser.hasHelpOption) return 0;
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(Command::open))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--open)"<<"\n";
                 return -1;
             }
-
-            appConfig.cmd = Command::unhide;
 
             return 0;
         }
@@ -301,7 +295,7 @@ int operator()( const StringType                                &a           //!
         else if ( opt.setParam("?MODE",true)
                || opt.isOption("shell-hide") || opt.isOption('H')
                // || opt.setParam("VAL",true)
-               || opt.setDescription("Turn on/off 'Show hidden files' shell option"))
+               || opt.setDescription("Command. Turns on/off 'Show hidden files' shell option"))
         {
             if (argsParser.hasHelpOption) return 0;
 
@@ -311,52 +305,108 @@ int operator()( const StringType                                &a           //!
                 return -1;
             }
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(boolVal ? Command::shellHide : Command::shellUnhide))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--shell-hide)"<<"\n";
                 return -1;
             }
-
-            appConfig.cmd = boolVal ? Command::shellHide : Command::shellUnhide;
 
             return 0;
         }
 
         else if ( opt.isOption("shell-unhide") || opt.isOption('u')
                // || opt.setParam("VAL",true)
-               || opt.setDescription("Turn on 'Show hidden files' shell option"))
+               || opt.setDescription("Command. Turns on 'Show hidden files' shell option"))
         {
             if (argsParser.hasHelpOption) return 0;
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(Command::shellUnhide))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--shell-unhide)"<<"\n";
                 return -1;
             }
-
-            appConfig.cmd = Command::shellUnhide;
 
             return 0;
         }
 
-        else if ( opt.setParam("?NAME", "")
-               || opt.isOption("make-self-alias") || opt.isOption("make-alias") || opt.isOption('A') 
+        else if ( opt.setParam("?MODE",true)
+               || opt.isOption("recurse") || opt.isOption('R')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Option. Perform job recusively. Option applies for all next commands."))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(boolVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            // if (!appConfig.isCommandSet())
+            // {
+            //     LOG_ERR<<errMsg<<"Option taken but command is not (--recurse)\n";
+            //     return -1;
+            // }
+
+            if (!appConfig.setRecurse(boolVal))
+            {
+                LOG_ERR<<errMsg<<"Option cannot be applied to current command (--recurse)\n";
+                return -1;
+            }
+
+            return 0;
+        }
+
+        else if ( opt.setParam("CH")
+               || opt.isOption("dot-char") || opt.isOption('D')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Option. Set 'dot' char. Default 'dot' char is '.'"))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(strVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            if (strVal.empty())
+            {
+                LOG_ERR<<errMsg<<"Empty value taken (--dot-char)\n";
+                return -1;
+            }
+
+            if (!appConfig.isCommandSet())
+            {
+                LOG_ERR<<errMsg<<"Option taken but command is not (--dot-char)\n";
+                return -1;
+            }
+
+            if (!appConfig.setDotChar(strVal[0]))
+            {
+                LOG_ERR<<errMsg<<"Option cannot be applied to current command (--dot-char)\n";
+                return -1;
+            }
+
+            return 0;
+        }
+
+        else if (  /* opt.setParam("?NAME", "")
+               ||  */ opt.isOption("make-self-alias") || opt.isOption("make-alias") || opt.isOption('A') 
                || opt.setDescription("Create alias for this command. Parameter value is optional, in this case name 'uhdf' will be used."))
         {
             if (argsParser.hasHelpOption) return 0;
 
-            if (appConfig.cmd!=Command::none)
+            if (!appConfig.startNewCommand(Command::makeAlias))
             {
-                LOG_ERR<<"Multiple commands taken"<<"\n";
+                LOG_ERR<<"Failed to add command to pipeline (--make-self-alias)"<<"\n";
                 return -1;
             }
 
-            appConfig.cmd = Command::makeAlias;
- 
-            if (opt.hasArg())
-               appConfig.aliasName = opt.optArg;
-            else
-               appConfig.aliasName = "uhdf";
+            // if (opt.hasArg())
+            //    appConfig.aliasName = opt.optArg;
+            // else
+            //    appConfig.aliasName = "uhdf";
 
             return 0;
         }
@@ -591,24 +641,29 @@ int operator()( const StringType                                &a           //!
 
     // Process non-option args here
 
-    if (!appConfig.path.empty())
+    if (!appConfig.isCommandSet())
+    {
+        LOG_ERR<<"Path taken but command is not\n";
+        return -1;
+    }
+
+    if (appConfig.isPathSet())
     {
         LOG_ERR<<"Path already taken"<<"\n";
         return -1;
     }
 
-    appConfig.path = argsParser.makeAbsPath(a);;
+    if (!appConfig.isCommandSet())
+    {
+        LOG_ERR<<"Path taken but command is not\n";
+        return -1;
+    }
 
-    #if 0
-    if (inputFilename.empty())
+    if (!appConfig.setPath(argsParser.makeAbsPath(a)))
     {
-        inputFilename = argsParser.makeAbsPath(a);
+        LOG_ERR<<"Path cannot be set to current command\n";
+        return -1;
     }
-    else
-    {
-        outputFilename = argsParser.makeAbsPath(a);
-    }
-    #endif
 
     return 0;
 

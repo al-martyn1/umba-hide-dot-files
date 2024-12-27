@@ -134,13 +134,14 @@ int unsafeMain(int argc, char* argv[])
     // Force set CLI arguments while running under debugger
     if (umba::isDebuggerPresent())
     {
-        // argsParser.args.clear();
-        // argsParser.args.push_back("--overwrite");
-
         std::string cwd;
         std::string rootPath = umba::shellapi::getDebugAppRootFolder(&cwd);
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
+
+        argsParser.args.clear();
+        argsParser.args.push_back("--hide");
+        argsParser.args.push_back(rootPath);
 
     } // if (umba::isDebuggerPresent())
 
@@ -191,6 +192,8 @@ int unsafeMain(int argc, char* argv[])
     //     return -1;
     // }
 
+    appConfig.finalizeCommands();
+
     if (!argsParser.quet  /* && !hasHelpOption */ )
     {
         //printNameVersion();
@@ -201,11 +204,110 @@ int unsafeMain(int argc, char* argv[])
 
     // На самом деле делаем выполнение не одной команды, а пакетный режим.
 
-    if (appConfig.cmd==Command::none)
+    if (appConfig.commands.empty())
     {
-        LOG_ERR<<"Command not taken"<<"\n";
+        LOG_ERR<<"No commands taken, nothing to do."<<"\n";
     }
 
+
+    for(auto c : appConfig.commands)
+    {
+        if (c.cmd==Command::hide || c.cmd==Command::unhide)
+        {
+
+#if defined(WIN32) || defined(_WIN32)
+
+            c.checkUpdatePath();
+
+            std::vector<std::string> rootScanPaths; rootScanPaths.emplace_back(c.path);
+            std::vector<std::string> foundFiles   ;
+            std::vector<std::string> excludedFiles;
+            std::set<std::string>    foundExtentions;
+
+            umba::filesys::scanners::scanFolders( rootScanPaths
+                                                , std::vector<std::string>() // includeFilesMaskList
+                                                , std::vector<std::string>() // excludeFilesMaskList
+                                                , umbaLogStreamNul
+                                                , foundFiles   
+                                                , excludedFiles
+                                                , foundExtentions
+                                                , (std::vector<std::string>*)0 // pFoundFilesRootFolders
+                                                , std::vector<std::string>() // excludeFoldersExact
+                                                , c.recurse
+                                                , false // logFoundHeader
+                                                , true  // addFolders
+                                                );
+            if (c.dotChar==0)
+                c.dotChar = '.';
+
+            bool bHide = c.cmd==Command::hide;
+
+            for(auto && fname : foundFiles)
+            {
+                auto nameOnly = umba::filename::getFileName(fname);
+                if (nameOnly.empty())
+                    continue;
+
+                if (nameOnly[0]!=c.dotChar)
+                    continue;
+
+                bool res = umba::shellapi::win32::fileAttributeHiddenSet(fname, bHide);
+                if (!argsParser.quet)
+                    umbaLogStreamMsg << (bHide ? "Hide" : "Unhide") << " " << fname << " - " << (res ? "Ok" : "Failed") << "\n";
+
+            } // for(auto && fname : foundFiles)
+
+#else
+
+            if (!argsParser.quet)
+                umbaLogStreamMsg << "Hide/unhide commands supported only in Windows\n";
+
+#endif
+
+        } // if (c.cmd==Command::hide || c.cmd==Command::unhide)
+
+        else if (c.cmd==Command::shellHide || c.cmd==Command::shellUnhide)
+        {
+
+#if defined(WIN32) || defined(_WIN32)
+
+            bool bHide = c.cmd==Command::shellHide;
+            bool res = umba::shellapi::win32::shellParamShowHiddenFilesSet(!bHide);
+            if (!argsParser.quet)
+                umbaLogStreamMsg << (bHide ? "Hide" : "Unhide") << " hidden files in shell - " << (res ? "Ok" : "Failed") << "\n";
+
+#else
+
+            if (!argsParser.quet)
+                umbaLogStreamMsg << "Shell hide/unhide commands supported only in Windows\n";
+
+#endif
+
+        } // else if (appConfig.cmd==Command::shellHide || appConfig.cmd==Command::shellUnhide)
+
+        else if (c.cmd==Command::open)
+        {
+
+#if defined(WIN32) || defined(_WIN32)
+
+            c.checkUpdatePath();
+            auto path = umba::filename::makeCanonical(c.path);
+            bool res = umba::shellapi::executeOpen(path);
+            if (!argsParser.quet)
+                umbaLogStreamMsg << "Open folder '" << c.path << "' in shell - " << (res ? "Ok" : "Failed") << "\n";
+
+#else
+
+            if (!argsParser.quet)
+                umbaLogStreamMsg << "Open folder in shell command supported only in Windows\n";
+
+#endif
+
+        } // else if (appConfig.cmd==open)
+
+    }
+
+#if 0
     if (appConfig.path.empty())
     {
         appConfig.path = umba::filesys::getCurrentDirectory();
@@ -271,6 +373,7 @@ int unsafeMain(int argc, char* argv[])
     {
     
     }
+#endif
 
     return 0;
 }
