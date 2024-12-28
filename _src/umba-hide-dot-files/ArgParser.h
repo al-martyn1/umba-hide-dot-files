@@ -314,7 +314,7 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-        else if ( opt.isOption("shell-unhide") || opt.isOption('u')
+        else if ( opt.isOption("shell-unhide") || opt.isOption('U')
                // || opt.setParam("VAL",true)
                || opt.setDescription("Command. Turns on 'Show hidden files' shell option"))
         {
@@ -349,6 +349,21 @@ int operator()( const StringType                                &a           //!
             // }
 
             if (!appConfig.setRecurse(boolVal))
+            {
+                LOG_ERR<<errMsg<<"Option cannot be applied to current command (--recurse)\n";
+                return -1;
+            }
+
+            return 0;
+        }
+
+        else if ( opt.isOption("no-recurse") || opt.isOption('N')
+               // || opt.setParam("VAL",true)
+               || opt.setDescription("Option. Perform job non-recusively. Option applies for all next commands."))
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!appConfig.setRecurse(false))
             {
                 LOG_ERR<<errMsg<<"Option cannot be applied to current command (--recurse)\n";
                 return -1;
