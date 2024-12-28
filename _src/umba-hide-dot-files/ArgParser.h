@@ -406,9 +406,9 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-        else if (  /* opt.setParam("?NAME", "")
-               ||  */ opt.isOption("make-self-alias") || opt.isOption("make-alias") || opt.isOption('A') 
-               || opt.setDescription("Create alias for this command. Parameter value is optional, in this case name 'uhdf' will be used."))
+        else if (  opt.setParam("?NAME", std::string())
+               ||  opt.isOption("make-self-alias") || opt.isOption("make-alias") || opt.isOption('A') 
+               || opt.setDescription("Command. Creates an alias for this utility. Parameter value is optional, in this case name 'uhdf' will be used."))
         {
             if (argsParser.hasHelpOption) return 0;
 
