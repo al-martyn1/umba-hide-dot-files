@@ -418,8 +418,8 @@ int operator()( const StringType                                &a           //!
                 return -1;
             }
 
-            // if (opt.hasArg())
-            //    appConfig.aliasName = opt.optArg;
+            if (opt.hasArg())
+               appConfig.curCommand.path =opt.optArg;
             // else
             //    appConfig.aliasName = "uhdf";
 
