@@ -1,6 +1,0 @@
-Normal = 0
-ReadBacktickEnclosedStart
-ReadBacktickEnclosed
-ReadDblBacktickEnclosed
-ReadDblBacktickEnclosedWaitEnd
-
